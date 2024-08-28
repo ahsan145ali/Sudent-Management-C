@@ -123,11 +123,27 @@ int addStudent(char name[] , char subject[] , Students **student){
     }
     strncpy((*student)->name, name,strlen(name));
 
-    (*student)->subjects = malloc((*student)->numOfSubjects * sizeof(StSubjects *)); // set size for subject
-    if ((*student)->subjects == NULL) {
-        printf("Memory allocation failed for subjects array.\n");
-        return 0; 
-    }
+    int option = 1;
+    do{
+        if((*student)->subjects == NULL)
+        { 
+            (*student)->subjects = malloc((*student)->numOfSubjects * sizeof(StSubjects *)); // set size for subject
+            if ((*student)->subjects == NULL) {
+                 printf("Memory allocation failed for subjects array.\n");
+                 return 0; 
+            }
+        }
+        else{
+              (*student)->numOfSubjects += 1;
+              (*student)->subjects = realloc((*student)->subjects , (*student)->numOfSubjects * (sizeof(Students *)));
+              if ((*student)->subjects == NULL) {
+                 printf("Memory Re allocation failed for subjects array.\n");
+                 return 0; 
+            }
+            while (getchar() != '\n'); // Clear input buffer
+            subject = stringInput("subject");
+        }
+   
     
     (*student)->subjects[(*student)->numOfSubjects - 1] = malloc( sizeof(StSubjects)); // set size for subjects at index
     (*student)->subjects[(*student)->numOfSubjects - 1]->subjectName= malloc((strlen(subject) +1) * sizeof(char)); // set size for subject
@@ -138,8 +154,11 @@ int addStudent(char name[] , char subject[] , Students **student){
         free(student);
         return 0;
     }
-    strncpy((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName, name,strlen(name));
+    strncpy((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName, subject,strlen(subject));
     (*student)->subjects[(*student)->numOfSubjects - 1]->grade = 'B';
+    printf("Press 1 to enter another subject \npress any other key to exit \n ");
+    scanf("%d" , &option);
+    }while(option== 1);
    
     return 1;
 
@@ -175,7 +194,7 @@ void dislpayStudents(Students **students , size_t size){
     for(int i = 0 ; i< size ; i++){
         printf("Student ID: %d \n" , students[i]->id);
         printf("Student Name: %s \n" , students[i]->name);
-        printf("Subjects:  \n");
+        printf("Subjects studied: %d \n" , students[i]->numOfSubjects);
         if(students[i]->numOfSubjects > 0 ){
             for(int j = 0 ; j < students[i]->numOfSubjects;j++){
                 printf("\t Subject Name: %s , Grade: %c \n" , students[i]->subjects[j]->subjectName , students[i]->subjects[j]->grade );
@@ -203,7 +222,7 @@ void mainMenu(){
     printf("7. Display  Students\n");
     printf("8. Exit\n");
     printf("===============================================\n");
-    printf("Please choose an option (1-6): ");
+    printf("Please choose an option (1-7): ");
 
 }
 #pragma endregion
@@ -223,7 +242,7 @@ int main(void){
         mainMenu(); // display Main Menu
         // Get user input and validate it
         if (scanf("%d", &choice) != 1) {
-            printf("\nInvalid input. Please enter a number between 1 and 5.\n");
+            printf("\nInvalid input. Please enter a number between 1 and 7.\n");
             while (getchar() != '\n'); // Clear input buffer
             continue;
         }
@@ -330,7 +349,7 @@ int main(void){
                 printf("\nExiting the program...\n");
                 break;
                 }else{
-                    printf("\nInvalid choice. Please select a valid option (1-5).\n");
+                    printf("\nInvalid choice. Please select a valid option (1-7).\n");
                 }
                 // Pause before returning to the main menu
                 printf("\nPress Enter to return to the main menu...");
