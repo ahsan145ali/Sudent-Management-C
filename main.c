@@ -7,13 +7,13 @@
 typedef struct studentSubjects{
     char *subjectName; 
     char grade;
-} studentSubjects;
+} StSubjects;
 
 typedef struct students{
     unsigned short int id ;
     char *name ;
     int numOfSubjects; 
-    studentSubjects *subjects ;
+    StSubjects **subjects ;
 } Students;
 
 typedef struct Teachers{
@@ -39,6 +39,10 @@ void clearScreen() {
 unsigned short int generate_Teacherid() {
     static unsigned short int current_id = 0; // Static variable to maintain state
     return ++current_id; // Increment and return the new ID
+}
+unsigned short int generate_Studentid() {
+    static unsigned short int current_sid = 0; // Static variable to maintain state
+    return ++current_sid; // Increment and return the new ID
 }
 
 char *stringInput(char prompt[]){
@@ -84,7 +88,7 @@ int addTeacher(char name[] , char subject[] , Teachers **teacher){
     }
     (*teacher)->id = generate_Teacherid();
 
-    (*teacher)->name = malloc((strlen(name) +1) * sizeof(char));
+    (*teacher)->name = malloc((strlen(name) +1) * sizeof(char)); // set size for name
     if ((*teacher)->name == NULL) {
         printf("Memory allocation failed for teacher name!\n");
         free(teacher);
@@ -101,8 +105,44 @@ int addTeacher(char name[] , char subject[] , Teachers **teacher){
     strncpy((*teacher)->subject, subject,strlen(subject));
     return 1;
 }
-void addStudent(){
-    printf("Adding Student");
+int addStudent(char name[] , char subject[] , Students **student){
+    *student = malloc(sizeof(Students));
+    if(student == NULL){
+        printf("Memory allocation failed!\n");
+        return 0;
+    }
+    (*student)->id = generate_Studentid();
+    (*student)->numOfSubjects = 1;
+
+
+    (*student)->name = malloc((strlen(name) +1) * sizeof(char)); // set size for name
+    if ((*student)->name == NULL) { 
+        printf("Memory allocation failed for student name!\n");
+        free(student);
+        return 0;
+    }
+    strncpy((*student)->name, name,strlen(name));
+
+    (*student)->subjects = malloc((*student)->numOfSubjects * sizeof(StSubjects *)); // set size for subject
+    if ((*student)->subjects == NULL) {
+        printf("Memory allocation failed for subjects array.\n");
+        return 0; 
+    }
+    
+    (*student)->subjects[(*student)->numOfSubjects - 1] = malloc( sizeof(StSubjects)); // set size for subjects at index
+    (*student)->subjects[(*student)->numOfSubjects - 1]->subjectName= malloc((strlen(subject) +1) * sizeof(char)); // set size for subject
+
+
+     if ((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName == NULL) { 
+        printf("Memory allocation failed for student subject name!\n");
+        free(student);
+        return 0;
+    }
+    strncpy((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName, name,strlen(name));
+    (*student)->subjects[(*student)->numOfSubjects - 1]->grade = 'B';
+   
+    return 1;
+
 }
 #pragma endregion
 
@@ -130,8 +170,22 @@ void displayTeachers(Teachers **teachers , size_t size){
         printf("*************************************************\n");
     }
 }
-void dislpayStudents(){
-
+void dislpayStudents(Students **students , size_t size){
+    clearScreen();
+    for(int i = 0 ; i< size ; i++){
+        printf("Student ID: %d \n" , students[i]->id);
+        printf("Student Name: %s \n" , students[i]->name);
+        printf("Subjects:  \n");
+        if(students[i]->numOfSubjects > 0 ){
+            for(int j = 0 ; j < students[i]->numOfSubjects;j++){
+                printf("\t Subject Name: %s , Grade: %c \n" , students[i]->subjects[j]->subjectName , students[i]->subjects[j]->grade );
+            }
+        }
+        else{
+            printf("No Subjects\n");
+        }
+        printf("*************************************************\n");
+    }
 }
 #pragma endregion
 
@@ -177,12 +231,42 @@ int main(void){
             if (choice >= 1 && choice <= 7){
                 if(choice == 1){ // add Student
                     if(students == NULL){ // mem not assigned , assign memory for first student
-
+                        numOfStudents++;
+                        students = malloc(numOfStudents * sizeof(Students *)); // assign memory of 1 teacher 
+                        if(students == NULL){
+                                printf("Memory Allocation to students failed");
+                                return 1;
+                            }
                     }
                     else{ // mem already assigned , realloc for new student
-
+                         numOfStudents++;
+                         students = realloc(students , numOfStudents * (sizeof(Students *)));
+                         if(students == NULL){
+                                 printf("Reallocation of Memory to students failed while adding %zu student" , numOfStudents);
+                                return 1;
+                            }
                     }
-                    addStudent(); 
+                    students[numOfStudents - 1] = NULL;
+                    while (getchar() != '\n'); // clear input
+                    char *name = stringInput("name"); // get name from user
+                    if(name == NULL) {
+                        printf("Failed to set name");
+                        return 1;
+                    }
+                    char *subject = stringInput("Subject"); // get subject from user
+                    if(subject == NULL){
+                        printf("Failed to set subject");
+                        free(name);
+                        return 1;
+                    }
+                    if(addStudent(name,subject,&students[numOfStudents - 1]) == 1){
+                        printf("Student Added with ID: %d  ", students[numOfStudents - 1]->id );
+                        free(name);
+                        free(subject);
+                    } else{
+                         printf("Failed to add Student");
+                        return 1;
+                    }
                 }else if(choice == 2){ // Add Teacher
                     
                      if(teachers == NULL){ // mem not assigned, assign memory for first teacher
@@ -239,7 +323,8 @@ int main(void){
                     displayTeachers(teachers , numOfTeachers);
                 }
                 else if(choice == 7){// dislpayStudents
-                    dislpayStudents(); 
+                    while (getchar() != '\n'); // clear input
+                    dislpayStudents(students,numOfStudents); 
                 }
                 }else if(choice == 8){ // Exit
                 printf("\nExiting the program...\n");
