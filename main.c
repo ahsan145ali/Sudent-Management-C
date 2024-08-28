@@ -14,13 +14,13 @@ typedef struct students{
     char *name ;
     int numOfSubjects; 
     studentSubjects *subjects ;
-} students;
+} Students;
 
 typedef struct Teachers{
     unsigned short int  id ;
     char *name ;
     char *subject; 
-    students **st; 
+    Students **st; 
 } Teachers;
 #pragma endregion
 
@@ -121,8 +121,14 @@ void findTeacherwSubject(){
 #pragma region Functions - Display
 
 
-void displayTeachers(){
-
+void displayTeachers(Teachers **teachers , size_t size){
+    clearScreen();
+    for(int i = 0 ; i< size ; i++){
+        printf("Teacher ID: %d \n" , teachers[i]->id);
+        printf("Teacher Name: %s \n" , teachers[i]->name);
+        printf("Teacher Subject: %s \n" , teachers[i]->subject);
+        printf("*************************************************\n");
+    }
 }
 void dislpayStudents(){
 
@@ -153,7 +159,9 @@ int main(void){
 
     int choice = 0;
     size_t numOfTeachers = 0;
+    size_t numOfStudents = 0;
     Teachers **teachers = NULL;
+    Students **students = NULL;
 
 
     do{
@@ -168,6 +176,12 @@ int main(void){
         else{
             if (choice >= 1 && choice <= 7){
                 if(choice == 1){ // add Student
+                    if(students == NULL){ // mem not assigned , assign memory for first student
+
+                    }
+                    else{ // mem already assigned , realloc for new student
+
+                    }
                     addStudent(); 
                 }else if(choice == 2){ // Add Teacher
                     
@@ -202,7 +216,7 @@ int main(void){
                     }
 
                     if(addTeacher(name , subject , &teachers[numOfTeachers - 1]) == 1){
-                        printf("Teacher Added %s , subject %s" , teachers[numOfTeachers - 1]->name , teachers[numOfTeachers - 1]->subject );
+                        printf("Teacher Added with ID: %d  ", teachers[numOfTeachers - 1]->id );
                         free(name);
                         free(subject);
                     }else{
@@ -221,7 +235,8 @@ int main(void){
                     findTeacherwSubject();
                 }
                 else if(choice == 6){// displayTeachers
-                    displayTeachers();
+                    while (getchar() != '\n'); // clear input
+                    displayTeachers(teachers , numOfTeachers);
                 }
                 else if(choice == 7){// dislpayStudents
                     dislpayStudents(); 
