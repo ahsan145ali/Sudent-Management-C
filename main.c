@@ -40,9 +40,48 @@ unsigned short int generate_Teacherid() {
     static unsigned short int current_id = 0; // Static variable to maintain state
     return ++current_id; // Increment and return the new ID
 }
+
 unsigned short int generate_Studentid() {
     static unsigned short int current_sid = 0; // Static variable to maintain state
     return ++current_sid; // Increment and return the new ID
+}
+
+void allocateMemoryTeacher(Teachers ***teachers , size_t* size){
+    if(*teachers == NULL){ // mem not assigned, assign memory for first teacher
+         *size = *size + 1; // increment size to potray number of teachers
+         *teachers = malloc(*size * sizeof(Teachers *)); // assign memory of 1 teacher 
+        if(*teachers == NULL){
+            printf("Memory Allocation to teachers failed");
+            exit(1);
+            }
+    }
+    else{ // mem already assigned , realloc for new teacher
+        *size = *size + 1; // increment size to potray number of teachers
+        *teachers = realloc(*teachers , *size * (sizeof(Teachers *))); // reallocate memory to hold a new teacher
+        if(*teachers == NULL){
+        printf("Reallocation of Memory to teachers failed while adding %zu teacher" , *size);
+        exit(1);
+        }
+     }
+}
+
+void allocateMemoryStudent(Students ***students , size_t* size){
+    if(*students == NULL){ // mem not assigned, assign memory for first teacher
+         *size = *size + 1; // increment size to potray number of teachers
+         *students = malloc(*size * sizeof(Students *)); // assign memory of 1 teacher 
+        if(*students == NULL){
+            printf("Memory Allocation to teachers failed");
+            exit(1);
+            }
+    }
+    else{ // mem already assigned , realloc for new teacher
+        *size = *size + 1; // increment size to potray number of teachers
+        *students = realloc(*students , *size * (sizeof(Students *))); // reallocate memory to hold a new teacher
+        if(*students == NULL){
+        printf("Reallocation of Memory to teachers failed while adding %zu teacher" , *size);
+        exit(1);
+        }
+     }
 }
 
 char *stringInput(char prompt[]){
@@ -121,7 +160,7 @@ int addStudent(char name[] , char subject[] , Students **student){
         free(student);
         return 0;
     }
-    strncpy((*student)->name, name,strlen(name));
+    strncpy((*student)->name, name,strlen(name)); // copy name to structre name
 
     int option = 1;
     do{
@@ -135,7 +174,7 @@ int addStudent(char name[] , char subject[] , Students **student){
         }
         else{
               (*student)->numOfSubjects += 1;
-              (*student)->subjects = realloc((*student)->subjects , (*student)->numOfSubjects * (sizeof(Students *)));
+              (*student)->subjects = realloc((*student)->subjects , (*student)->numOfSubjects * (sizeof(Students *))); // re allcoate memory to add new subject
               if ((*student)->subjects == NULL) {
                  printf("Memory Re allocation failed for subjects array.\n");
                  return 0; 
@@ -154,8 +193,8 @@ int addStudent(char name[] , char subject[] , Students **student){
         free(student);
         return 0;
     }
-    strncpy((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName, subject,strlen(subject));
-    (*student)->subjects[(*student)->numOfSubjects - 1]->grade = 'B';
+    strncpy((*student)->subjects[(*student)->numOfSubjects - 1]->subjectName, subject,strlen(subject)); // copy subject name to structure subject name
+    (*student)->subjects[(*student)->numOfSubjects - 1]->grade = 'B'; // set grade for subject
     printf("Press 1 to enter another subject \npress any other key to exit \n ");
     scanf("%d" , &option);
     }while(option== 1);
@@ -169,8 +208,21 @@ int addStudent(char name[] , char subject[] , Students **student){
 void findAllStudentswSubject(){
 
 }
-void findStudentwId(){
 
+/// @brief finds a certain student with id
+/// @param students a double piointer of the Students structure
+/// @param size represents the total number of students in the structure
+/// @param id the id of the student which needs to be found
+/// @return if found returns that student pointer else returns Null
+Students* findStudentwId(Students **students , size_t size ,unsigned short int id){
+    clearScreen(); // Clear console screen
+    if(id-1 < size){ // student exists as id is incremented automatically when a student is added
+        return students[id-1];
+    }
+    else{
+        return NULL;
+    }
+    
 }
 void findTeacherwSubject(){
 
@@ -196,14 +248,24 @@ void dislpayStudents(Students **students , size_t size){
         printf("Student Name: %s \n" , students[i]->name);
         printf("Subjects studied: %d \n" , students[i]->numOfSubjects);
         if(students[i]->numOfSubjects > 0 ){
-            for(int j = 0 ; j < students[i]->numOfSubjects;j++){
+            for(int j = 0 ; j < students[i]->numOfSubjects;j++){ // print every subject for that student
                 printf("\t Subject Name: %s , Grade: %c \n" , students[i]->subjects[j]->subjectName , students[i]->subjects[j]->grade );
             }
         }
         else{
-            printf("No Subjects\n");
+            printf("No Subjects Studied\n");
         }
         printf("*************************************************\n");
+    }
+}
+void displayStudentwId(Students *student){
+    printf("Student Name: %s \n" , student->name);
+    printf("Subjects Studied: %d \n",student->numOfSubjects);
+    if(student->numOfSubjects > 0){
+        for(int i=0 ; i< student->numOfSubjects ; i++)
+        {
+             printf("\t Subject Name: %s , Grade: %c \n" , student->subjects[i]->subjectName , student->subjects[i]->grade );
+        }
     }
 }
 #pragma endregion
@@ -236,9 +298,9 @@ int main(void){
     Teachers **teachers = NULL;
     Students **students = NULL;
 
+free(teachers);
 
     do{
-
         mainMenu(); // display Main Menu
         // Get user input and validate it
         if (scanf("%d", &choice) != 1) {
@@ -249,22 +311,8 @@ int main(void){
         else{
             if (choice >= 1 && choice <= 7){
                 if(choice == 1){ // add Student
-                    if(students == NULL){ // mem not assigned , assign memory for first student
-                        numOfStudents++;
-                        students = malloc(numOfStudents * sizeof(Students *)); // assign memory of 1 teacher 
-                        if(students == NULL){
-                                printf("Memory Allocation to students failed");
-                                return 1;
-                            }
-                    }
-                    else{ // mem already assigned , realloc for new student
-                         numOfStudents++;
-                         students = realloc(students , numOfStudents * (sizeof(Students *)));
-                         if(students == NULL){
-                                 printf("Reallocation of Memory to students failed while adding %zu student" , numOfStudents);
-                                return 1;
-                            }
-                    }
+                    allocateMemoryStudent(&students , &numOfStudents);
+                    
                     students[numOfStudents - 1] = NULL;
                     while (getchar() != '\n'); // clear input
                     char *name = stringInput("name"); // get name from user
@@ -288,22 +336,8 @@ int main(void){
                     }
                 }else if(choice == 2){ // Add Teacher
                     
-                     if(teachers == NULL){ // mem not assigned, assign memory for first teacher
-                            numOfTeachers++;
-                            teachers = malloc(numOfTeachers * sizeof(Teachers *)); // assign memory of 1 teacher 
-                            if(teachers == NULL){
-                                printf("Memory Allocation to teachers failed");
-                                return 1;
-                            }
-                        }
-                    else{ // mem already assigned , realloc for new teacher
-                            numOfTeachers++;
-                            teachers = realloc(teachers , numOfTeachers * (sizeof(Teachers *)));
-                            if(teachers == NULL){
-                                printf("Reallocation of Memory to teachers failed while adding %zu teacher" , numOfTeachers);
-                                return 1;
-                            }
-                    }
+                    allocateMemoryTeacher(&teachers,&numOfTeachers); // allocate memory to the pointer
+                   
                     teachers[numOfTeachers - 1] = NULL;
                     while (getchar() != '\n'); // clear input
                     char *name = stringInput("name"); // get name from user
@@ -332,7 +366,25 @@ int main(void){
                     findAllStudentswSubject();
                 }
                 else if(choice == 4){ // findStudentwId
-                    findStudentwId();
+                    while (getchar() != '\n'); // clear input
+                    unsigned short int findId = 1 ;
+                    printf("Enter Student Id: ");
+                     if (scanf("%hd", &findId) != 1) {
+                         printf("\nInvalid input. Please enter a valid number.\n");
+                         while (getchar() != '\n'); // Clear input buffer
+                         continue;
+                    }
+                    while (getchar() != '\n'); // Clear input buffer
+                    Students* st =  findStudentwId(students , numOfStudents  , findId);
+                    if(st == NULL)
+                    {
+                        printf("Invalid Id \n No Student found with the id: %d" , findId);
+                    }
+                    else{
+                        printf("Student Found with id : %d \n" , findId);
+                        displayStudentwId(st);
+
+                    }
                 }
                 else if(choice == 5){// findTeacherwSubject
                     findTeacherwSubject();
@@ -363,3 +415,4 @@ int main(void){
     
     return 0;
 }
+
