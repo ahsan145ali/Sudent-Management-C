@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #pragma region Structures
 
@@ -205,8 +206,31 @@ int addStudent(char name[] , char subject[] , Students **student){
 #pragma endregion
 
 #pragma region Functions - Find
-void findAllStudentswSubject(){
 
+
+/// @brief finds all students that study a certain subject
+/// @param students  a double piointer of the Students structure
+/// @param  size represents the total number of students in the structure
+/// @param subject the subjects that needs to be found among all students
+/// @param newSize to maintain new size according to the students that are found
+/// @return if found returns a pointer to a pointer array of student structure else returns Null
+Students** findAllStudentswSubject(Students **students , size_t size ,char subject[] , size_t *newSize){
+    Students **foundStudents = NULL;
+    for(int i =0 ;i < size ; i++){
+        if(students[i]->numOfSubjects > 0){
+            for(int j=0 ; j < students[i]->numOfSubjects ; j++){
+                if(strcmp(students[i]->subjects[j]->subjectName, subject)== 0){
+                    allocateMemoryStudent(&foundStudents , newSize);
+                    foundStudents[*newSize-1] = students[i];
+                    break;
+                }
+            }
+        }
+    }
+    if(foundStudents == NULL){
+        return NULL;
+    }
+    return foundStudents;
 }
 
 /// @brief finds a certain student with id
@@ -224,6 +248,7 @@ Students* findStudentwId(Students **students , size_t size ,unsigned short int i
     }
     
 }
+
 void findTeacherwSubject(){
 
 }
@@ -231,7 +256,9 @@ void findTeacherwSubject(){
 
 #pragma region Functions - Display
 
-
+/// @brief display all of the current students
+/// @param teachers a double pointer to Teachers structure which holds all of the current teachers
+/// @param size current number of students that have been added
 void displayTeachers(Teachers **teachers , size_t size){
     clearScreen();
     for(int i = 0 ; i< size ; i++){
@@ -241,6 +268,9 @@ void displayTeachers(Teachers **teachers , size_t size){
         printf("*************************************************\n");
     }
 }
+/// @brief display all of the current students
+/// @param students a double pointer to Students structure which holds all of the current students
+/// @param size current number of students that have been added
 void dislpayStudents(Students **students , size_t size){
     clearScreen();
     for(int i = 0 ; i< size ; i++){
@@ -258,6 +288,8 @@ void dislpayStudents(Students **students , size_t size){
         printf("*************************************************\n");
     }
 }
+/// @brief Display a single student
+/// @param student the student that is to be displayed
 void displayStudentwId(Students *student){
     printf("Student Name: %s \n" , student->name);
     printf("Subjects Studied: %d \n",student->numOfSubjects);
@@ -362,8 +394,21 @@ free(teachers);
                     }
                 }
                 else if(choice == 3) // findAllStudentswSubject
-                {
-                    findAllStudentswSubject();
+                {  
+                    while (getchar() != '\n'); // Consume newline 
+                    char *subject = stringInput("Subject"); // get subject from user
+                    if(subject == NULL){
+                        printf("Failed to set subject");
+                        return 1;
+                    }
+                    size_t newSize = 0;
+                    Students ** st =  findAllStudentswSubject(students , numOfStudents , subject , &newSize);
+                    if(st == NULL){
+                        printf("No Found");
+                    }else{
+                        dislpayStudents(st,newSize);
+                        free(st);
+                    }
                 }
                 else if(choice == 4){ // findStudentwId
                     while (getchar() != '\n'); // clear input
@@ -383,6 +428,7 @@ free(teachers);
                     else{
                         printf("Student Found with id : %d \n" , findId);
                         displayStudentwId(st);
+                        free(st);
 
                     }
                 }
